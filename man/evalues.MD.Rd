@@ -11,7 +11,7 @@ evalues.MD(est, se = NA, true = 0)
 
 \item{se}{The standard error of the point estimate}
 
-\item{true}{The true MD to which to shift the observed point estimate. Typically set to 1 to consider a null true effect.}
+\item{true}{The true standardized mean difference to which to shift the observed point estimate. Typically set to 0 to consider a null true effect.}
 }
 \description{
 Returns a data frame containing point estimates, the lower confidence limit, and the upper confidence limit

@@ -15,7 +15,7 @@ evalues.RD(n11, n10, n01, n00, true = 0, alpha = 0.05, grid = 1e-04)
 
 \item{n00}{Number of unexposed, non-diseased individuals}
 
-\item{true}{Null value of risk difference to which to shift the point estimate}
+\item{true}{True value of risk difference to which to shift the point estimate. Usually set to 0 to consider the null.}
 
 \item{alpha}{Alpha level}
 

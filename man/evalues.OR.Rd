@@ -4,7 +4,7 @@
 \alias{evalues.OR}
 \title{Compute E-value for an odds ratio and its confidence interval limits}
 \usage{
-evalues.OR(est, lo = NULL, hi = NULL, rare = NULL, true = 1)
+evalues.OR(est, lo = NA, hi = NA, rare = NA, true = 1)
 }
 \arguments{
 \item{est}{The point estimate}

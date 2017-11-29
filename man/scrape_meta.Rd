@@ -4,16 +4,16 @@
 \alias{scrape_meta}
 \title{Convert forest plot or summary table to meta-analytic dataset}
 \usage{
-scrape_meta(.type = "RR", .est, .hi, .sqrt = FALSE)
+scrape_meta(type = "RR", est, hi, sqrt = FALSE)
 }
 \arguments{
-\item{.type}{\code{RR} if point estimates are RRs or ORs (to be handled on log scale); \code{raw} if point estimates are raw differences, standardized mean differences, etc. (such that they can be handled with no transformations)}
+\item{type}{\code{RR} if point estimates are RRs or ORs (to be handled on log scale); \code{raw} if point estimates are raw differences, standardized mean differences, etc. (such that they can be handled with no transformations)}
 
-\item{.est}{Vector of study point estimates on RR or OR scale}
+\item{est}{Vector of study point estimates on RR or OR scale}
 
-\item{.hi}{Vector of upper bounds of 95\% CIs on RRs}
+\item{hi}{Vector of upper bounds of 95\% CIs on RRs}
 
-\item{.sqrt}{Vector of booleans (TRUE/FALSE) for whether each study measured an odds ratio of a common outcome that should be approximated as a risk ratio via the square-root transformation}
+\item{sqrt}{Vector of booleans (TRUE/FALSE) for whether each study measured an odds ratio of a common outcome that should be approximated as a risk ratio via the square-root transformation}
 }
 \description{
 Given relative risks (RR) and upper bounds of 95\% confidence intervals (CI)

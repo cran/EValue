@@ -4,7 +4,7 @@
 \alias{evalues.HR}
 \title{Compute E-value for a hazard ratio and its confidence interval limits}
 \usage{
-evalues.HR(est, lo = NULL, hi = NULL, rare = NULL, true = 1)
+evalues.HR(est, lo = NA, hi = NA, rare = NA, true = 1)
 }
 \arguments{
 \item{est}{The point estimate}
