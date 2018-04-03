@@ -669,7 +669,8 @@ confounded_meta = function( q, r=NA, muB=NA, sigB=0,
       Tmin = max( 1, exp( qnorm(1-r) * sqrt(t2) - q + yr ) )
       
       # min confounding strength
-      Gmin = Tmin + sqrt( Tmin^2 - Tmin )
+      # suppress warnings to avoid warnings about NaN when term inside sqrt is negative
+      Gmin = suppressWarnings( Tmin + sqrt( Tmin^2 - Tmin ) )
     } else {
       Tmin = Gmin = NA
     }
@@ -691,7 +692,7 @@ confounded_meta = function( q, r=NA, muB=NA, sigB=0,
       Tmin = exp( q - yr - qnorm(r) * sqrt(t2) )
       
       # min confounding strength
-      Gmin = Tmin + sqrt( Tmin^2 - Tmin )
+      Gmin = suppressWarnings( Tmin + sqrt( Tmin^2 - Tmin ) )
     } else {
       Tmin = Gmin = NA
     }
