@@ -7,56 +7,62 @@
 "lead"
 
 
+#' Compute E-value for a linear regression coefficient estimate
+#' 
+#' Returns a data frame containing point estimates, the lower confidence limit, and the upper confidence limit
+#' on the risk ratio scale (through an approximate conversion) as well as E-values for the point estimate and the confidence interval
+#' limit closer to the null.  
+#' @param est The linear regression coefficient estimate (standardized or unstandardized)
+#' @param se The standard error of the point estimate
+#' @param delta The contrast of interest in the exposure
+#' @param sd The standard deviation of the outcome (or residual standard deviation); see Details
+#' @param true The true standardized mean difference to which to shift the observed point estimate. Typically set to 0 to consider a null true effect. 
+#' @export
+#' @details 
+#' A true standardized mean difference for linear regression would use \code{sd} = SD(Y | X, C), where Y is
+#' the outcome, X is the exposure of interest, and C are any adjusted covariates. See Examples for how to extract 
+#' this from \code{lm}. A conservative approximation would instead use \code{sd} = SD(Y). Regardless, the reported E-value
+#' for the confidence interval treats \code{sd} as known, not estimated.  
+#' @examples
+#' # first standardizing conservatively by SD(Y)
+#' data(lead)
+#' ols = lm(age ~ income, data = lead)
+#' 
+#' # for a 1-unit increase in income
+#' evalues.OLS(est = ols$coefficients[2],
+#'             se = summary(ols)$coefficients['income', 'Std. Error'],
+#'             sd = sd(lead$age) )
+#'             
+#' # for a 0.5-unit increase in income
+#' evalues.OLS(est = ols$coefficients[2],
+#'             se = summary(ols)$coefficients['income', 'Std. Error'],
+#'             sd = sd(lead$age),
+#'             delta = 0.5 )
+#'             
+#' # now use residual SD to avoid conservatism
+#' # here makes very little difference because income and age are
+#' # not highly correlated
+#' evalues.OLS(est = ols$coefficients[2],
+#'             se = summary(ols)$coefficients['income', 'Std. Error'],
+#'             sd = summary(ols)$sigma )
 
-# #' Compute E-value from a linear regression z-score
-# #' 
-# #' Given an estimated coefficient with its standard error from a linear
-# #' regression model, or alternatively the associated two-sided p-value, 
-# #' computes an approximate E-value through conversion to the Fisher's scale
-# #' and then to the standardized mean difference (Cohen's d) scale.
-# #' Assumes that the independent and dependent variables are bivariate normal. 
-# #' @param beta The estimated regression coefficient.
-# #' Can be left empty if providing both a p-value and a sample size.
-# #' @param se The standard error of the regression coefficient.
-# #' Can be left empty if providing both a p-value and a sample size. 
-# #' @param pval The two-sided p-value of the estimated regression coefficient. 
-# #' Can be left empty if providing both an estimated coefficient and 
-# #' the associated standard error. 
-# #' @param n The total sample size in the regression model. 
-# #' Can be left empty if providing both an estimated coefficient and 
-# #' the associated standard error. 
-# #' @param true The true standardized mean difference to which to shift the observed point estimate. Typically set to 1 to consider a null true effect. 
-# #' @export
-# #' @examples
-# #' # using estimated coefficient and SE
-# #' evaluesrG( beta = 1.4, se = .5, n = 100 )
-# #' 
-# #' # using p-value
-# #' evaluesrG( pval = 0.03, n = 100 )
-# 
-# evaluesrG = function( beta=NA, se = NA, pval = NA, n = NA, true = 0 ) {
-#   
-#   if ( is.na(n) ) stop("Must provide n.")
-#   
-#   # if user didn't pass 
-#   if ( ( is.na(beta) | is.na(se) ) & is.na(pval) ) {
-#     stop("Must provide either: 1) beta and se; or 2) pval.")
-#   }
-#   
-#   # get z-score and sample size from provided information
-#   if ( ! is.na(beta) ) z = beta / se
-#   else if ( ! is.na(pval) ) z = abs( qnorm( pval / 2 ) )
-#   
-#   # convert to mean difference
-#   SMD = sinh( 2 * z / sqrt( n - 3 ) )
-#   SE.SMD = 2 * sqrt( ( cosh( z / sqrt(n-3) ) )^4 / (n-2) )
-#   
-#   # to match the use of absolute value in z-score above
-#   true = abs(true)
-# 
-#   return( evalues.MD( est = SMD, se = SE.SMD, true = true ) )
-# }
-
+evalues.OLS = function( est, se = NA, sd, delta = 1, true = 0 ) {
+  
+  if ( !is.na(se) ) {
+    if ( se < 0 ) stop("Standard error cannot be negative")
+  }
+  
+  if ( delta < 0 ) {
+    delta = -delta
+    message("Recoding delta to be positive")
+  }
+  
+  # rescale to reflect a contrast of size delta
+  est = est * delta
+  se = se * delta
+  
+  return( evalues.MD( est = est / sd, se = se / sd, true = true ) )
+}
 
 
 #' Compute E-value for a difference of means and its confidence interval limits
@@ -718,6 +724,9 @@ confounded_meta = function( q, r=NA, muB=NA, sigB=0,
     lo.phat = max( 0, phat + qnorm( tail.prob )*SE )
     hi.phat = min( 1, phat - qnorm( tail.prob )*SE )
     
+    # warn if bootstrapping needed
+    if ( phat < 0.15 | phat > 0.85 ) warning("Phat is close to 0 or 1. We recommend using bias-corrected and accelerated bootstrapping to estimate all inference in this case.")
+    
   } else {
     SE = lo.phat = hi.phat = NA
   }
@@ -1026,13 +1035,7 @@ sens_plot = function( type, q, muB=NA, Bmin=log(1), Bmax=log(5), sigB=0,
 
 #' Convert forest plot or summary table to meta-analytic dataset
 #'
-#' Given relative risks (RR) and upper bounds of 95\% confidence intervals (CI)
-#' from a forest plot or summary table, returns a dataframe ready for meta-analysis
-#' (e.g., via the \code{metafor} package) with the log-RRs and their variances.
-#' Optionally, the user may indicate studies for which the point estimate is to be
-#' interpreted as an odds ratios of a common outcome rather than a relative risk;
-#' for such studies, the function applies VanderWeele (2017)'s square-root transformation to convert
-#' the odds ratio to an approximate risk ratio. 
+#' This function is now deprecated. You should use the improved version \code{MetaUtility::scrape_meta} instead.
 #' @param type \code{RR} if point estimates are RRs or ORs (to be handled on log scale); \code{raw} if point estimates are raw differences, standardized mean differences, etc. (such that they can be handled with no transformations)
 #' @param est Vector of study point estimates on RR or OR scale
 #' @param hi Vector of upper bounds of 95\% CIs on RRs
@@ -1042,26 +1045,26 @@ sens_plot = function( type, q, muB=NA, Bmin=log(1), Bmax=log(5), sigB=0,
 
 scrape_meta = function( type="RR", est, hi, sqrt=FALSE ){
   
-  if ( type == "RR" ) {
-    # take square root for certain elements
-    RR = est
-    RR[sqrt] = sqrt( RR[sqrt] )
-    
-    # same for upper CI limit
-    hi.RR = hi
-    hi.RR[sqrt] = sqrt( hi.RR[sqrt] )
-    
-    sei = ( log(hi.RR) - log(RR) ) / qnorm(.975)
-    
-    return( data.frame( yi = log(RR), vyi = sei^2 ) )
-    
-  } else if ( type == "raw" ) {
-    
-    sei = ( hi - est ) / qnorm(.975)
-    return( data.frame( yi = est, vyi = sei^2 ) )
-  }
+  .Deprecated("MetaUtility::scrape_meta")
   
-  
+  # if ( type == "RR" ) {
+  #   # take square root for certain elements
+  #   RR = est
+  #   RR[sqrt] = sqrt( RR[sqrt] )
+  #   
+  #   # same for upper CI limit
+  #   hi.RR = hi
+  #   hi.RR[sqrt] = sqrt( hi.RR[sqrt] )
+  #   
+  #   sei = ( log(hi.RR) - log(RR) ) / qnorm(.975)
+  #   
+  #   return( data.frame( yi = log(RR), vyi = sei^2 ) )
+  #   
+  # } else if ( type == "raw" ) {
+  #   
+  #   sei = ( hi - est ) / qnorm(.975)
+  #   return( data.frame( yi = est, vyi = sei^2 ) )
+  # }
 }
 
 

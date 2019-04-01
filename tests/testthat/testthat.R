@@ -84,6 +84,98 @@ test_that("SMD #3", {
 
 
 
+test_that("Regression coefficient, causative", {
+  
+  est = 0.5
+  sd = 0.8
+  se.b = 0.2
+  true = 0.1
+  
+  # calculate SMD
+  d = est/sd
+  se = se.b/sd
+  
+  RR = exp(0.91 * d)
+  RR.true = exp(0.91 * true)
+  E = ( RR + sqrt( RR * (RR - RR.true) ) ) / RR.true
+  
+  RR.lo = exp( 0.91 * d - 1.78 * se )
+  E.lo = ( RR.lo + sqrt( RR.lo * (RR.lo - RR.true) ) ) / RR.true
+  
+  package = evalues.OLS( est = est,
+                         se = se.b,
+                         sd = sd,
+                         true = true )
+  
+  expect_equal( E, package[2,"point"] ) 
+  expect_equal( E.lo, package[2,"lower"] )
+  expect_identical( TRUE, is.na( package[2,"upper"] ) )
+})
+
+
+test_that("Regression coefficient, preventive", {
+  
+  est = -10
+  sd = 12
+  se.b = 1.5
+  true = 0.8
+  
+  # calculate SMD
+  d = est/sd
+  se = se.b/sd
+  
+  RR = 1/exp(0.91 * d)
+  RR.true = 1/exp(0.91 * true)
+  E = ( RR + sqrt( RR * (RR - RR.true) ) ) / RR.true
+  
+  RR.hi = 1/exp( 0.91 * d + 1.78 * se )
+  E.hi = ( RR.hi + sqrt( RR.hi * (RR.hi - RR.true) ) ) / RR.true
+  
+  package = evalues.OLS( est = est,
+                         se = se.b,
+                         sd = sd,
+                         true = true )
+  
+  expect_equal( E, package[2,"point"] ) 
+  expect_equal( E.hi, package[2,"upper"] )
+  expect_identical( TRUE, is.na( package[2,"lower"] ) )
+})
+
+
+test_that("Regression coefficient, preventive, different delta", {
+  
+  est = -10
+  sd = 12
+  se.b = 1.5
+  true = 0.8
+  delta = -2
+  
+  # calculate SMD
+  d = (delta*est)/sd
+  se = (delta*se.b)/sd
+  
+  RR = 1/exp(0.91 * d)
+  RR.true = 1/exp(0.91 * true)
+  E = ( RR + sqrt( RR * (RR - RR.true) ) ) / RR.true
+  
+  RR.hi = 1/exp( 0.91 * d + 1.78 * se )
+  E.hi = ( RR.hi + sqrt( RR.hi * (RR.hi - RR.true) ) ) / RR.true
+  
+  package = evalues.OLS( est = est,
+                         se = se.b,
+                         sd = sd,
+                         delta = delta,
+                         true = true )
+  
+  expect_equal( E, package[2,"point"] ) 
+  expect_equal( E.hi, package[2,"upper"] )
+  expect_identical( TRUE, is.na( package[2,"lower"] ) )
+})
+
+
+
+
+
 test_that("Peng's risk difference example", {
   f = (397+78557) / (51+108778+397+78557)
   p1 = 397 / (397+78557)
@@ -447,6 +539,11 @@ test_that("Case #1, causative", {
                         yr=yr, vyr=vyr,
                         t2=t2, vt2=vt2 )
   
+  # make q more extreme to trigger bootstrap warning
+  expect_warning( confounded_meta( q=log(1.5), r=r, muB=muB, sigB=sigB,
+                        yr=yr, vyr=vyr,
+                        t2=t2, vt2=vt2 ) )
+  
   
   ##### Prop Above ######
   # point estimate
@@ -614,31 +711,6 @@ test_that("True = est, no CI, preventive", {
 })
 
 
-
-##### scrape_meta function #####
-
-
-test_that("scrape_meta tests", {
-  
-  # test point estimates from scrape_meta with and without square-root transformation
-  expect_equal( c( log(1.2), log( sqrt(0.8) ) ),
-                scrape_meta( est = c(1.2, 0.8), hi = c(1.3, 1.1), sqrt = c(FALSE, TRUE) )$yi )
-  
-  # test CI limits from scrape_meta with and without square-root transformation
-  expect_equal( c( ( ( log(1.3) - log(1.2) ) / 1.96 )^2,
-                   ( ( log( sqrt(1.1) ) - log( sqrt(0.8) ) ) / 1.96 )^2 ),
-                scrape_meta( est = c(1.2, 0.8), hi = c(1.3, 1.1), sqrt = c(FALSE, TRUE) )$vyi, tol = 0.0001 )
-  
-  # test raw input (not RR)
-  expect_equal( c( -0.5, 2 ),
-                scrape_meta( type = "raw", est = c(-0.5, 2), hi = c(0, 2.1), sqrt = c(FALSE, TRUE) )$yi )
-  
-  expect_equal( c( ( ( 0 - (-0.5) ) / 1.96 )^2,
-                   ( ( 2.1 - 2 ) / 1.96 )^2 ),
-                scrape_meta( type = "raw", est = c(-0.5, 2), hi = c(0, 2.1), sqrt = c(FALSE, TRUE) )$vyi, tol = 0.0001 )
-})
-
-
 ##### stronger_than function #####
 
 test_that("stronger_than #1", {
@@ -700,6 +772,5 @@ test_that("stronger_than #2", {
   expect_equal( max( 0, st$Est - st$SE * crit ), st$CI.lo )
   
 })
-
 
 
