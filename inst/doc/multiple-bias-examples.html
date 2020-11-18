@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -268,7 +268,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -330,6 +329,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -341,18 +341,6 @@ summary {
   display: none;
 }
 </style>
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
 
 <!-- code folding -->
 
@@ -387,8 +375,8 @@ $(document).ready(function () {
                          selection(&quot;general&quot;, &quot;increased risk&quot;))</code></pre>
 <p>Printing the biases prints out the arguments that are required for the <code>multi_bound()</code> function, making for easy copying and pasting into that function.</p>
 <pre class="r"><code>HIV_biases</code></pre>
-<pre class="message"><code>#&gt; The following arguments can be copied and pasted into the
-#&gt; multi_bound() function: RRAUc = , RRUcY = , RRUsYA1 = , RRSUsA1 =</code></pre>
+<pre class="message"><code>#&gt; The following arguments can be copied and pasted into the multi_bound()
+#&gt; function: RRAUc = , RRUcY = , RRUsYA1 = , RRSUsA1 =</code></pre>
 <pre class="r"><code>multi_bound(biases = HIV_biases, 
             RRAUc = 2.3, RRUcY = 2.5, RRUsYA1 = 3, RRSUsA1 = 2)</code></pre>
 <pre class="output"><code>#&gt; [1] 2.269737</code></pre>
@@ -396,9 +384,8 @@ $(document).ready(function () {
 <pre class="r"><code>multi_evalue(biases = HIV_biases, 
              est = OR(6.75, rare = TRUE), 
              lo = 2.79, hi = 16.31)</code></pre>
-<pre class="message"><code>#&gt; This multi-bias e-value refers simultaneously to parameters
-#&gt; RR_AUc, RR_UcY, RR_UsY|A=1, RR_SUs|A=1 . (See documentation for
-#&gt; details.)</code></pre>
+<pre class="message"><code>#&gt; This multi-bias e-value refers simultaneously to parameters RR_AUc,
+#&gt; RR_UcY, RR_UsY|A=1, RR_SUs|A=1 . (See documentation for details.)</code></pre>
 <pre class="output"><code>#&gt;                        point    lower upper
 #&gt; RR                  6.750000 2.790000 16.31
 #&gt; Multi-bias E-values 4.635703 2.728474    NA</code></pre>
@@ -412,16 +399,16 @@ $(document).ready(function () {
                                             rare_outcome = TRUE, 
                                             rare_exposure = FALSE))</code></pre>
 <pre class="r"><code>leuk_biases</code></pre>
-<pre class="message"><code>#&gt; The following arguments can be copied and pasted into the
-#&gt; multi_bound() function: RRAUc = , RRUcY = , ORYAa =</code></pre>
+<pre class="message"><code>#&gt; The following arguments can be copied and pasted into the multi_bound()
+#&gt; function: RRAUc = , RRUcY = , ORYAa =</code></pre>
 <p>Again we can calculate the bound and multi-bias E-value as in the text.</p>
 <pre class="r"><code>multi_bound(biases = leuk_biases, RRAUc = 2, RRUcY = 1.22, ORYAa = 1.59) </code></pre>
 <pre class="output"><code>#&gt; [1] 1.747568</code></pre>
 <pre class="r"><code>multi_evalue(biases = leuk_biases, 
              est = OR(0.51, rare = TRUE), 
              lo = 0.3, hi = 0.89)</code></pre>
-<pre class="message"><code>#&gt; This multi-bias e-value refers simultaneously to parameters
-#&gt; RR_AUc, RR_UcY, RR_YA*|a . (See documentation for details.)</code></pre>
+<pre class="message"><code>#&gt; This multi-bias e-value refers simultaneously to parameters RR_AUc,
+#&gt; RR_UcY, RR_YA*|a . (See documentation for details.)</code></pre>
 <pre class="output"><code>#&gt;                        point lower    upper
 #&gt; RR                  0.510000   0.3 0.890000
 #&gt; Multi-bias E-values 1.351985    NA 1.058404</code></pre>
@@ -451,6 +438,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
