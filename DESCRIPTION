@@ -2,7 +2,7 @@ Package: EValue
 Type: Package
 Title: Sensitivity Analyses for Unmeasured Confounding and Other Biases
         in Observational Studies and Meta-Analyses
-Version: 4.1.0
+Version: 4.1.1
 Authors@R: c(
     person("Maya B.", "Mathur", email = "mmathur@stanford.edu", role = c("cre", "aut")),
     person("Louisa H.", "Smith", role = "aut"),
@@ -18,11 +18,11 @@ Encoding: UTF-8
 Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2020-11-18 13:41:15 UTC; mmathur
+Packaged: 2020-12-25 15:24:28 UTC; mmathur
 Author: Maya B. Mathur [cre, aut],
   Louisa H. Smith [aut],
   Peng Ding [aut],
   Tyler J. VanderWeele [aut]
 Maintainer: Maya B. Mathur <mmathur@stanford.edu>
 Repository: CRAN
-Date/Publication: 2020-11-18 20:50:07 UTC
+Date/Publication: 2021-01-04 17:40:02 UTC

@@ -12,7 +12,7 @@ sens_plot(
   tail = NA,
   muB.toward.null = FALSE,
   give.CI = TRUE,
-  Bmin = log(1),
+  Bmin = 0,
   Bmax = log(4),
   breaks.x1 = NA,
   breaks.x2 = NA,
@@ -109,7 +109,7 @@ sens_plot( method = "calibrated",
 # # commented out because takes a while too run
 # sens_plot( method = "calibrated",
 #            type="line",
-#            q=log(1),
+#            q=0,
 #            tail = "below",
 #            dat = toyMeta,
 #            yi.name = "est",
@@ -160,7 +160,7 @@ sens_plot( method = "parametric",
            vt2 = .001,
            t2=0.4,
            sigB = 0.1,
-           Bmin=log(1),
+           Bmin=0,
            Bmax=log(4) )
 
 ##### Distribution Line Plot #####
@@ -182,9 +182,9 @@ sens_plot( type="dist",
            t2=0.2 )
 }
 \references{
-Mathur MB & VanderWeele TJ (2020). Robust metrics and sensitivity analyses for meta-analyses of heterogeneous effects. \emph{Epidemiology}.
+Mathur MB & VanderWeele TJ (2020a). Sensitivity analysis for unmeasured confounding in meta-analyses. \emph{Journal of the American Statistical Association}.
 
-Mathur MB & VanderWeele TJ (2020). Sensitivity analysis for unmeasured confounding in meta-analyses. \emph{Journal of the American Statistical Association}.
+Mathur MB & VanderWeele TJ (2020b). Robust metrics and sensitivity analyses for meta-analyses of heterogeneous effects. \emph{Epidemiology}.
 
 Wang C-C & Lee W-C (2019). A simple method to estimate prediction intervals and
 predictive distributions: Summarizing meta-analyses
