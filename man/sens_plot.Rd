@@ -139,7 +139,7 @@ sens_plot( method = "calibrated",
            give.CI = FALSE )
 
 # # with confidence band
-# # commented out because  it takes a while
+# # commented out because it takes a while
 # # this example gives bootstrap warnings because of its small sample size
 # sens_plot( method = "calibrated",
 #            type="line",

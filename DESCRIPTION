@@ -2,13 +2,13 @@ Package: EValue
 Type: Package
 Title: Sensitivity Analyses for Unmeasured Confounding and Other Biases
         in Observational Studies and Meta-Analyses
-Version: 4.1.1
+Version: 4.1.2
 Authors@R: c(
     person("Maya B.", "Mathur", email = "mmathur@stanford.edu", role = c("cre", "aut")),
     person("Louisa H.", "Smith", role = "aut"),
     person("Peng", "Ding", role = "aut"),
     person("Tyler J.", "VanderWeele", role = "aut"))
-Description: Conducts sensitivity analyses for unmeasured confounding,selection bias, and measurement error (individually or in combination) in individual studies. Also conducts sensitivity analyses for unmeasured confounding in meta-analyses.  
+Description: Conducts sensitivity analyses for unmeasured confounding, selection bias, and measurement error (individually or in combination; VanderWeele & Ding (2017) <doi:10.7326/M16-2607>; Smith & VanderWeele (2019) <doi:10.1097/EDE.0000000000001032>; VanderWeele & Li (2019) <doi:10.1093/aje/kwz133>; Smith & VanderWeele (2021) <arXiv:2005.02908>). Also conducts sensitivity analyses for unmeasured confounding in meta-analyses (Mathur & VanderWeele (2020a) <doi:10.1080/01621459.2018.1529598>; Mathur & VanderWeele (2020b) <doi:10.1097/EDE.0000000000001180>) and for additive measures of effect modification (Mathur et al., under review).  
 LazyData: true
 License: GPL-2
 Imports: stats, graphics, ggplot2 (>= 2.2.1), metafor, methods, boot,
@@ -18,11 +18,11 @@ Encoding: UTF-8
 Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2020-12-25 15:24:28 UTC; mmathur
+Packaged: 2021-04-01 19:17:55 UTC; mmathur
 Author: Maya B. Mathur [cre, aut],
   Louisa H. Smith [aut],
   Peng Ding [aut],
   Tyler J. VanderWeele [aut]
 Maintainer: Maya B. Mathur <mmathur@stanford.edu>
 Repository: CRAN
-Date/Publication: 2021-01-04 17:40:02 UTC
+Date/Publication: 2021-04-01 21:40:10 UTC

@@ -36,7 +36,7 @@ confidence interval limit closer to the null.
 }
 \details{
 An E-value for unmeasured confounding is minimum strength of
-association, on the risk ratio scale, that an unmeasured confounder would
+association, on the risk ratio scale, that unmeasured confounder(s) would
 need to have with both the treatment and the outcome to fully explain away
 a specific treatment–outcome association, conditional on the measured
 covariates.
@@ -122,5 +122,11 @@ evalue(est = MD(.5), se = .25)
 evalue(HR(0.56, rare = FALSE), lo = 0.46, hi = 0.69)
 # for a rare outcome
 evalue(HR(0.56, rare = TRUE), lo = 0.46, hi = 0.69)
+}
+\references{
+\enumerate{
+\item Ding & VanderWeele (2016). Sensitivity analysis without assumptions. \emph{Epidemiology.} 27(3), 368.
+\item VanderWeele & Ding (2017). Sensitivity analysis in observational research: Introducing the E-value. \emph{Annals of Internal Medicine.} 27(3), 368.
+}
 }
 \keyword{e-value}

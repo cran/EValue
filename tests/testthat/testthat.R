@@ -9,9 +9,10 @@
 # library(dplyr)
 # library(ICC)
 # library(msm)
+# library(MetaUtility)
 # library(here())
 # setwd(here())
-# #setwd("~/Dropbox/Personal computer/Independent studies/R packages/EValue package (git)/evalue_package/EValue")
+# setwd("~/Dropbox/Personal computer/Independent studies/R packages/EValue package (git)/evalue_package/EValue")
 # setwd("tests")
 # source("helper_testthat.R")
 
@@ -528,6 +529,7 @@ test_that("Reject negative outcomes", {
 
 ###################### CONFOUNDED_META AND SENS_PLOT ######################
 
+
 ##### Parametric Method #####
 test_that("Parametric, test set #1 (setting q equal to observed mean without bias should yield 50%)", {
   expect_equal( 0.5, confounded_meta(method="parametric",
@@ -587,12 +589,12 @@ test_that("Parametric, test set #2 (causative)", {
   
   ##### TMin ######
   # point estimate
-  expect_equal( exp( qnorm(1-r) * sqrt(t2) - q + yr ),
+  expect_equal( exp( qnorm(1-r) * sqrt(t2 - sigB^2) - q + yr ),
                 cm[2,2] )
   
   # check standard error against deltamethod function
   #qnorm( 1 - 0.1 ) # because deltamethod can't take its derivatve
-  SE = deltamethod( ~ exp( 1.281552 * sqrt(x2) - log(1.1) + x1 ), mean = c( log(1.4), 0.3 ), cov = diag( c(0.5, 0.02) ) )
+  SE = deltamethod( ~ exp( 1.281552 * sqrt(x2) - log(1.1) + x1 ), mean = c( log(1.4), 0.3 - .1^2 ), cov = diag( c(0.5, 0.02) ) )
   
   expect_equal( SE, cm[2,3], tol = 0.001 )
   
@@ -616,8 +618,6 @@ test_that("Parametric, test set #2 (causative)", {
   # CI limits
   expect_equal( max(1, cm[3,2] - SE*qnorm(0.975)), cm[3,4] )
   expect_equal( cm[3,2] + SE*qnorm(0.975), cm[3,5] )
-  
-  ##### sens_plot
   
 })
 
@@ -658,12 +658,12 @@ test_that("Parametric, test set #3 (preventive)", {
   
   ##### TMin ######
   # point estimate
-  expect_equal( exp( q - yr - qnorm(r) * sqrt(t2) ),
+  expect_equal( exp( q - yr - qnorm(r) * sqrt(t2 - sigB^2) ),
                 cm[2,2] )
   
   # check standard error against deltamethod function
   #qnorm( 0.1 ) # because deltamethod can't take its derivative
-  SE = deltamethod( ~ exp( log(0.9) - x1 - (-1.281552) * sqrt(x2) ), mean = c( log(0.6), 0.2 ), cov = diag( c(0.2, 0.01) ) )
+  SE = deltamethod( ~ exp( log(0.9) - x1 - (-1.281552) * sqrt(x2) ), mean = c( log(0.6), 0.2 - .1^2 ), cov = diag( c(0.2, 0.01) ) )
   
   expect_equal( SE, cm[2,3], tol = 0.001 )
   
@@ -723,7 +723,7 @@ test_that("Parametric, test set #5 (exactly 200 estimates; manipulate muB.toward
                    sd.w = 1,
                    true.effect.dist = "normal" )
     
-    # shift AWAY from null
+    # shif1 AWAY from null
     q = log(1.1)  # set q to the (true) mean
     r = .2
     muB = log(1.5)
@@ -735,7 +735,7 @@ test_that("Parametric, test set #5 (exactly 200 estimates; manipulate muB.toward
     est = meta$b
   }
   
- 
+  
   
   x0 = confounded_meta(method="parametric",
                        q = q,
@@ -800,7 +800,7 @@ test_that("Parametric, test set #5 (exactly 200 estimates; manipulate muB.toward
   
   # this is a case where Tmin represents bias TOWARD the null
   # check that their numerical value is correct
-
+  
   
   yr.corr = meta$beta - log(x0$Est[ x0$Value == "Tmin" ])
   expect_equal( pnorm( q = q, 
@@ -813,11 +813,11 @@ test_that("Parametric, test set #5 (exactly 200 estimates; manipulate muB.toward
 
 
 test_that("Parametric, test set #6 (Tmin gets set to 1)", {
-
+  
   
   ##### tail = "below" case ######
   # here, yr^c is positive, but tail = "below"
-  # for Tmin and Gmin, bias has to shift downward to get q
+  # for Tmin and Gmin, bias has to shif1 downward to get q
   q = log(0.5)
   muB = log(1.5)
   sigB = sqrt(0.5*0.25)
@@ -827,12 +827,12 @@ test_that("Parametric, test set #6 (Tmin gets set to 1)", {
   vt2 = 0.5
   r = 0.75
   tail = "below"
-
+  
   cm = confounded_meta(method="parametric", q=q, r=r, muB=muB, sigB=sigB,
                        yr=yr, vyr=vyr,
                        t2=t2, vt2=vt2, tail = tail )
-
-
+  
+  
   # Tmin
   expect_equal( cm[2,2], 1 )
   # Gmin
@@ -840,18 +840,18 @@ test_that("Parametric, test set #6 (Tmin gets set to 1)", {
   # their CIs should be NA
   expect_equal( as.numeric( c(NA, NA, NA) ), as.numeric( cm[2, 3:5] ) )
   
-
+  
   ##### tail = "above" case ######
   # symmetric to above
   q = log(1.5)
   yr = log(0.5)
   tail = "above"
-
+  
   cm = confounded_meta(method="parametric", q=q, r=r, muB=muB, sigB=sigB,
                        yr=yr, vyr=vyr,
                        t2=t2, vt2=vt2, tail = tail )
-
-
+  
+  
   # Tmin
   expect_equal( cm[2,2], 1 )
   # Gmin
@@ -1167,37 +1167,37 @@ test_that("Calibrated, test set #3 (exactly 200 estimates; manipulate muB.toward
                  minN = 100,
                  sd.w = 1,
                  true.effect.dist = "normal" )
-
   
-  # shift AWAY from null
+  
+  # shif1 AWAY from null
   q = log(1.1)  # set q to the (true) mean
   r = .2
   muB = log(1.5)
   
   # first no bias
   x0 = confounded_meta(method="calibrated",
-                      q = q,
-                      r = r,
-                      tail = "above",
-                      muB = 0,
-                      
-                      give.CI=FALSE,
-                      dat = d,
-                      yi.name = "yi",
-                      vi.name = "vyi")
+                       q = q,
+                       r = r,
+                       tail = "above",
+                       muB = 0,
+                       
+                       give.CI=FALSE,
+                       dat = d,
+                       yi.name = "yi",
+                       vi.name = "vyi")
   
   # bias TOWARD null
   x1 = confounded_meta(method="calibrated",
-                      q = q,
-                      r = r,
-                      tail = "above",
-                      muB = muB,
-                      muB.toward.null = TRUE,
-                      
-                      give.CI=FALSE,
-                      dat = d,
-                      yi.name = "yi",
-                      vi.name = "vyi")
+                       q = q,
+                       r = r,
+                       tail = "above",
+                       muB = muB,
+                       muB.toward.null = TRUE,
+                       
+                       give.CI=FALSE,
+                       dat = d,
+                       yi.name = "yi",
+                       vi.name = "vyi")
   
   # since bias correction INCREASES the mean in this case, 
   #  we should have MORE meaningfully strong effects
@@ -1217,7 +1217,7 @@ test_that("Calibrated, test set #3 (exactly 200 estimates; manipulate muB.toward
   
   expect_equal( x2$Est[ x2$Value == "Prop" ] < x0$Est[ x0$Value == "Prop" ], TRUE ) 
   
-
+  
   # Tmin and Gmin should be the same in all cases
   expect_equal( x0$Est[ x0$Value == "Tmin" ],
                 x1$Est[ x1$Value == "Tmin" ],
@@ -1232,15 +1232,15 @@ test_that("Calibrated, test set #3 (exactly 200 estimates; manipulate muB.toward
   calib = MetaUtility::calib_ests(yi = d$yi,
                                   sei = sqrt(d$vyi) )
   expect_equal( mean( calib - log(x0$Est[ x0$Value == "Tmin" ]) > q ), 
-        r ) 
-
-
+                r ) 
+  
+  
 })
 
 
-test_that("Calibrated and parametric, test set #4 (exactly 200 estimates); Tmin shifts away from the null", {
+test_that("Calibrated and parametric, test set #4 (exactly 200 estimates); Tmin shif1s away from the null", {
   
-  # in these examples, tail = above but yr < 0, so Tmin is shifting AWAY from null 
+  # in these examples, tail = above but yr < 0, so Tmin is shif1ing AWAY from null 
   
   # make data with exactly 200 calibrated estimates so that Tmin and Gmin should exactly hit r
   d = sim_data2( k = 200,
@@ -1259,7 +1259,7 @@ test_that("Calibrated and parametric, test set #4 (exactly 200 estimates); Tmin 
   q = log(0.9)  # q is ABOVE the true mean
   r = .05
   muB = log(1.5)
- 
+  
   
   ##### Calibrated #####
   x0 = confounded_meta(method="calibrated",
@@ -1306,9 +1306,9 @@ test_that("Calibrated and parametric, test set #4 (exactly 200 estimates); Tmin 
   
   # should be exactly equal to r
   expect_equal( pnorm( q = q,
-         mean = yr.corr,
-         sd = sqrt(meta$tau2),
-         lower.tail = FALSE ), r )
+                       mean = yr.corr,
+                       sd = sqrt(meta$tau2),
+                       lower.tail = FALSE ), r )
   
 })
 
@@ -1470,126 +1470,3 @@ test_that("Calibrated, test set #4, (no bias needed to reduce this Phat to less 
   
 })
 
-
-
-###################### SENS_PLOT WARNINGS ABOUT IGNORED ARGS ######################
-
-# BM
-
-
-# # we'll use the calibrated method to avoid normality assumption
-# data(toyMeta)
-#
-# # without confidence band - WORKS
-# sens_plot( method = "calibrated",
-#            type="line",
-#            q=log(.9),
-#            tail = "below",
-#            Bmin=log(1),
-#            Bmax=log(4),
-#            dat = toyMeta,
-#            yi.name = "est",
-#            vi.name = "var",
-#            give.CI = FALSE )
-
-
-
-##### sens_plot
-
-
-
-#### sens_table function #####
-
-test_that("True = est, no CI, preventive", {
-  expect_equal( 1,
-                evalues.RR( 0.9, true = 0.9 )[2, "point"] )
-  
-  tab = sens_table( meas="prop", q=log(1.1), muB=c( log(1.1),
-                                                    log(1.5) ), sigB=c(0, 0.1),
-                    yr=log(2.5), t2=0.1 )
-  
-  # get table values directly from other function
-  mine = suppressMessages( confounded_meta(q=log(1.1), muB=log(1.1), sigB=0,
-                                           yr=log(2.5), t2=0.1)[1,"Est"] )
-  expect_equal( mine, tab[1,1] )
-  
-  
-  mine = suppressMessages( confounded_meta(q=log(1.1), muB=log(1.5), sigB=0,
-                                           yr=log(2.5), t2=0.1)[1,"Est"] )
-  expect_equal( mine, tab[2,1] )
-  
-  
-  mine = suppressMessages( confounded_meta(q=log(1.1), muB=log(1.1), sigB=0.1,
-                                           yr=log(2.5), t2=0.1)[1,"Est"] )
-  expect_equal( mine, tab[1,2] )
-  
-  
-  mine = suppressMessages( confounded_meta(q=log(1.1), muB=log(1.5), sigB=0.1,
-                                           yr=log(2.5), t2=0.1)[1,"Est"] )
-  expect_equal( mine, tab[2,2] )
-})
-
-
-# ##### stronger_than function #####
-#
-# test_that("stronger_than #1", {
-#
-#   # proportion above and below should sum to 1
-#   expect_equal( 1,
-#                 stronger_than( q = .5, yr = .6, vyr = .07, t2 = 0.2, vt2=0.02,
-#                                CI.level=0.95, tail = "above" )$Est +
-#                   stronger_than( q = .5, yr = .6, vyr = .07, t2 = 0.2, vt2=0.02,
-#                                  CI.level=0.95, tail = "below" )$Est
-#                   )
-#
-#   q = 0.5
-#   yr = 0.6
-#   vyr = 0.07
-#   t2 = 0.2
-#   vt2 = 0.02
-#   CI.level = 0.9
-#
-#   st = stronger_than( q = q, yr = yr, vyr = vyr, t2 = t2, vt2=vt2,
-#                       CI.level=CI.level, tail = "above" )
-#
-#   expect_equal( 1 - pnorm( ( q - yr ) / sqrt( t2 ) ), st$Est )
-#
-#   expect_equal( sqrt( (vyr / t2) + ( ( vt2 * (q - yr)^2 ) / ( 4 * t2^3 ) ) ) * dnorm( ( q - yr ) / sqrt( t2 ) ),
-#                 st$SE )
-#
-#   alpha = 1 - CI.level
-#   crit = qnorm( 1 - alpha/2 )
-#
-#   expect_equal( min( 1, st$Est + st$SE * crit ), st$CI.hi )
-#   expect_equal( max( 0, st$Est - st$SE * crit ), st$CI.lo )
-#
-# })
-#
-#
-# test_that("stronger_than #2", {
-#
-#  # proportion below a preventive effect
-#   q = 0.6
-#   yr = -0.2
-#   vyr = 0.002
-#   t2 = 0.4
-#   vt2 = 0.02
-#   CI.level = 0.75
-#
-#   st = stronger_than( q = q, yr = yr, vyr = vyr, t2 = t2, vt2=vt2,
-#                       CI.level=CI.level, tail = "below" )
-#
-#   expect_equal( pnorm( ( q - yr ) / sqrt( t2 ) ), st$Est )
-#
-#   expect_equal( sqrt( (vyr / t2) + ( ( vt2 * (q - yr)^2 ) / ( 4 * t2^3 ) ) ) * dnorm( ( q - yr ) / sqrt( t2 ) ),
-#                 st$SE )
-#
-#   alpha = 1 - CI.level
-#   crit = qnorm( 1 - alpha/2 )
-#
-#   expect_equal( min( 1, st$Est + st$SE * crit ), st$CI.hi )
-#   expect_equal( max( 0, st$Est - st$SE * crit ), st$CI.lo )
-#
-# })
-#
-#

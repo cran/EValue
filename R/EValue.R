@@ -94,7 +94,7 @@ evalues.OLS = function( est, se = NA, sd, delta = 1, true = 0, ... ) {
   # rescale to reflect a contrast of size delta
   est = toMD( est, delta = delta )
   se = toMD( se, delta = delta )
-
+  
   return( evalues.MD( est = est, se = se, true = true ) )
 }
 
@@ -309,10 +309,10 @@ evalues.RR = function( est, lo = NA, hi = NA, true = 1, ... ) {
   
   # warn user if using non-null true value
   if ( true != 1 ) wrapmessage(c("You are calculating a \"non-null\" E-value,",
-                                  "i.e., an E-value for the minimum amount of unmeasured",
-                                  "confounding needed to move the estimate and confidence",
-                                  "interval to your specified true value rather than to",
-                                  "the null value."))
+                                 "i.e., an E-value for the minimum amount of unmeasured",
+                                 "confounding needed to move the estimate and confidence",
+                                 "interval to your specified true value rather than to",
+                                 "the null value."))
   
   # check if CI crosses null
   null.CI = NA
@@ -698,7 +698,7 @@ evalue.default <- function(est, ...) {
 #' @param ... Arguments passed to other methods.
 #' @export
 #' @details An E-value for unmeasured confounding is minimum strength of
-#'   association, on the risk ratio scale, that an unmeasured confounder would
+#'   association, on the risk ratio scale, that unmeasured confounder(s) would
 #'   need to have with both the treatment and the outcome to fully explain away
 #'   a specific treatment–outcome association, conditional on the measured
 #'   covariates.
@@ -725,6 +725,11 @@ evalue.default <- function(est, ...) {
 #'   
 #' @keywords e-value
 #' @export
+#' @references 
+#' 1. Ding & VanderWeele (2016). Sensitivity analysis without assumptions. \emph{Epidemiology.} 27(3), 368.
+#' 
+#' 2. VanderWeele & Ding (2017). Sensitivity analysis in observational research: Introducing the E-value. \emph{Annals of Internal Medicine.} 27(3), 368.
+#' 
 #' @examples
 #' # compute E-value for leukemia example in VanderWeele and Ding (2017)
 #' evalue(RR(0.80), 0.71, 0.91)

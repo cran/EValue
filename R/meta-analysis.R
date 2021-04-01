@@ -81,8 +81,8 @@
 #' ## Effect size measures other than log-relative risks
 #' If your meta-analysis uses effect sizes other than log-relative risks, you should first approximately convert them to log-relative risks, for example via [EValue::convert_measures()] and then pass the converted point estimates or meta-analysis estimates to \code{confounded_meta}. 
 #' 
-#' ## Interpreting \code{Tmin} and \code{Gmin}
-#' \code{Tmin} is defined as the minimum bias factor on the relative risk scale, common to all meta-analyzed studies, that would be required to reduce to less than \code{r} the proportion of studies with true causal effect sizes stronger than the threshold \code{q}. \code{Gmin} is defined as the minimum confounding strength on the relative risk scale -- that is, the relative risk relating unmeasured confounder(s) to both the exposure and the outcome -- common to all meta-analyzed studies, that would be required to reduce to less than \code{r} the proportion of studies with true causal effect sizes stronger than the threshold \code{q}. \code{Gmin} is a one-to-one transformation of \code{Gmin} given by \eqn{Gmin = Tmin + \sqrt{Tmin * (Tmin - 1)} }. If the estimated proportion of meaningfully strong effect sizes is already less than \code{r} even without the introduction of any bias, \code{Tmin} and \code{Gmin} will be set to 1.
+#' ## Interpreting \code{Tmin} and \code{Gmin} 
+#' \code{Tmin} is defined as the minimum average bias factor on the relative risk scale that would be required to reduce to less than \code{r} the proportion of studies with true causal effect sizes stronger than the threshold \code{q}, assuming that the bias factors are log-normal across studies with standard deviation \code{sigB}. \code{Gmin} is defined as the minimum confounding strength on the relative risk scale -- that is, the relative risk relating unmeasured confounder(s) to both the exposure and the outcome -- on average among the meta-analyzed studies, that would be required to reduce to less than \code{r} the proportion of studies with true causal effect sizes stronger than the threshold \code{q}, again assuming that bias factors are log-normal across studies with standard deviation \code{sigB}. \code{Gmin} is a one-to-one transformation of \code{Tmin} given by \eqn{Gmin = Tmin + \sqrt{Tmin * (Tmin - 1)} }. If the estimated proportion of meaningfully strong effect sizes is already less than \code{r} even without the introduction of any bias, \code{Tmin} and \code{Gmin} will be set to 1. (These definitions of \code{Tmin} and \code{Gmin} are generalizations of those given in Mathur & VanderWeele, 2020a, who defined these quantities in terms of bias that is homogeneous across studies. You can conduct analyses with homogeneous bias by setting \code{sigB = 0}.)
 #' 
 #' The direction of bias represented by \code{Tmin} and \code{Gmin} is dependent on the argument \code{tail}: when \code{tail = "above"}, these metrics consider bias that had operated to \emph{increase} studies' point estimates, and when \code{tail = "below"}, these metrics consider bias that had operated to \emph{decrease} studies' point estimates. Such bias could operate toward or away from the null depending on whether the pooled point estimate \code{yr} happens to fall above or below the null. As such, the direction of bias represented by \code{Tmin} and \code{Gmin} may or may not match that specified by the argument \code{muB.toward.null} (which is used only for estimation of \code{Prop}).
 #' 
@@ -190,7 +190,8 @@
 #' 
 #' # passing only arguments needed for Tmin, Gmin point estimates
 #' confounded_meta( method = "parametric",
-#'                  q=log(0.90),
+#'                  q = log(0.90),
+#'                  sigB = 0,
 #'                  r = 0.10,
 #'                  tail = "below",
 #'                  yr=yr,
@@ -276,7 +277,7 @@ confounded_meta = function( method="calibrated",  # for both methods
     
     ##### Check for Bad Input #####
     if ( t2 < 0 ) stop("Heterogeneity cannot be negative")
-    #if ( is.na(sigB) ) stop("Must provide sigB for parametric method")
+    if ( is.na(sigB) ) stop("Must provide sigB for parametric method")
     
     
     # the second condition is needed for Shiny app:
@@ -332,11 +333,11 @@ confounded_meta = function( method="calibrated",  # for both methods
       }
       
       # point estimates for Tmin, Gmin
-      if ( !is.na(r) ) {
+      if ( !is.na(r) & !is.na(sigB) ) {
         
         # first check if any shifting is actually needed
         # current Phat with no bias
-        Phat.naive = 1 - pnorm( (q - yr) / sqrt(t2) )
+        Phat.naive = 1 - pnorm( (q - yr) / sqrt(t2 - sigB^2) )
         
         if ( Phat.naive <= r ) {
           Tmin = 1
@@ -345,7 +346,7 @@ confounded_meta = function( method="calibrated",  # for both methods
           # the max is there in case no bias is needed
           # (i.e., the bias would be going in the other direction)
           # (i.e., proportion of effects > q already < r without confounding)
-          Tmin = max( 1, exp( qnorm(1-r) * sqrt(t2) - q + yr ) )
+          Tmin = max( 1, exp( qnorm(1-r) * sqrt(t2 - sigB^2) - q + yr ) )
           
           # alternative way of handling this issue:
           # Tmin could be less than 1 if yr has to be shifted POSITIVELY
@@ -377,17 +378,17 @@ confounded_meta = function( method="calibrated",  # for both methods
       }
      
       # point estimates for Tmin, Gmin
-      if ( !is.na(r) ) {
+      if ( !is.na(r) & !is.na(sigB) ) {
         
         # first check if any shifting is actually needed
         # current Phat with no bias
-        Phat.naive = pnorm( (q - yr) / sqrt(t2) )
+        Phat.naive = pnorm( (q - yr) / sqrt(t2 - sigB^2) )
         
         if ( Phat.naive <= r ) {
           Tmin = 1
         } else {
           # the max is there in case no bias is needed
-          Tmin = max( 1, exp( q - yr - qnorm(r) * sqrt(t2) ) )
+          Tmin = max( 1, exp( q - yr - qnorm(r) * sqrt(t2 - sigB^2) ) )
           
           # alternative way of handling this issue:
           # # Tmin could be less than 1 if yr has to be shifted NEGATIVELY
@@ -441,17 +442,16 @@ confounded_meta = function( method="calibrated",  # for both methods
     ##### Delta Method Inference: Tmin and Gmin #####
     # do inference only if given needed SEs and r
     # last condition: if Tmin has been set to 1, give NAs for inference
-    if ( !is.na(vyr) & !is.na(vt2) & !is.na(r) & Tmin != 1 ){
+    if ( !is.na(vyr) & !is.na(vt2) & !is.na(r) & !is.na(sigB) & Tmin != 1 ){
       
       ##### Tmin #####
       if ( tail == "above" ) {
-        
-        term = ( vt2 * qnorm(1-r)^2 ) / ( 4 * t2 )
-        SE.T = exp( sqrt(t2) * qnorm(1-r) - q + yr ) * sqrt( vyr + term  )
+        term = ( vt2 * qnorm(1-r)^2 ) / ( 4 * (t2-sigB^2) )
+        SE.T = exp( sqrt(t2 - sigB^2) * qnorm(1-r) - q + yr ) * sqrt( vyr + term  )
         
       } else {
-        term = ( vt2 * qnorm(r)^2 ) / ( 4 * t2 )
-        SE.T = exp( q - yr - sqrt(t2) * qnorm(r) ) * sqrt( vyr + term  )
+        term = ( vt2 * qnorm(r)^2 ) / ( 4 * (t2-sigB^2) )
+        SE.T = exp( q - yr - sqrt(t2 - sigB^2) * qnorm(r) ) * sqrt( vyr + term  )
       }
       
       tail.prob = ( 1 - CI.level ) / 2
@@ -704,7 +704,7 @@ confounded_meta = function( method="calibrated",  # for both methods
 #'            give.CI = FALSE )
 #' 
 #' # # with confidence band
-#' # # commented out because  it takes a while
+#' # # commented out because it takes a while
 #' # # this example gives bootstrap warnings because of its small sample size
 #' # sens_plot( method = "calibrated",
 #' #            type="line",
@@ -813,6 +813,8 @@ sens_plot = function(method="calibrated",
   # tail = "above"
   # breaks.x1 = NA
   # breaks.x2 = NA
+  # give.CI = TRUE
+  # muB.toward.null = TRUE
   
   val = group = eB = phat = lo = hi = B = B.x = Phat = NULL
   
@@ -933,10 +935,14 @@ sens_plot = function(method="calibrated",
       
       if ( no.CI ){
         graphics::plot(p)
+        return(p)
       } else {
-        graphics::plot( p + ggplot2::geom_ribbon( aes(ymin=lo, ymax=hi), alpha=0.15 ) )
         
         warning("Calculating parametric confidence intervals in the plot. For values of the proportion that are less than 0.15 or greater than 0.85, these confidence intervals may not perform well.")
+        
+        p = p + ggplot2::geom_ribbon( aes(ymin=lo, ymax=hi), alpha=0.15 )
+        graphics::plot( p )
+        return(p)
       }
       
       
@@ -956,6 +962,7 @@ sens_plot = function(method="calibrated",
       
       res = data.frame( B = seq(Bmin, Bmax, .01) )
       
+
       # evaluate Phat causal at each value of B
       res = res %>% rowwise() %>%
         mutate( Phat = Phat_causal( q = q, 
@@ -1084,21 +1091,6 @@ Phat_causal = function( q,
   
   return(Phat.t)
 }
-
-
-
-#' Transformation from bias factor to confounding strength scale
-#'
-#' An internal function. 
-#' @noRd
-g = Vectorize( function(x) {
-  # define transformation in a way that is monotonic over the effective range of B (>1)
-  # to avoid ggplot errors in sens_plot
-  # helper function for confounded_meta
-  if ( is.na(x) ) return(NA)
-  if (x < 1) return( x / 1e10 )
-  x + sqrt( x^2 - x )
-} )
 
 
 
