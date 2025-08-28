@@ -58,7 +58,7 @@ multi_evalue <- function(biases, est, ...) {
     stop('Argument "biases" must be of class "bias" or "multi_bias"')
   }
   
-  if (class(biases) == "bias") biases <- multi_bias(biases)
+  if (inherits(biases, "bias")) biases <- multi_bias(biases)
   
   UseMethod("multi_evalue", est)
 }
@@ -120,7 +120,7 @@ multi_evalues.RR <- function(biases, est, lo = NA, hi = NA, true = 1, verbose = 
     stop('Argument "biases" must be of class "bias" or "multi_bias"')
   }
   
-  if (class(biases) == "bias") biases <- multi_bias(biases)
+  if (inherits(biases, "bias")) biases <- multi_bias(biases)
   
   # organize user's values
   values = c(est, lo, hi)

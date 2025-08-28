@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -14,7 +14,7 @@ biases <- multi_bias(confounding(),
                      selection("general", "increased risk"), 
                      misclassification("exposure", rare_outcome = TRUE))
 
-## ---- result = "asis", echo = FALSE-------------------------------------------
+## ----result = "asis", echo = FALSE--------------------------------------------
 tab <- EValue:::get_arg_tab()
 tab$latex <- sub("^\\$", "$$", tab$latex)
 tab$latex <- sub("\\$$", "$$", tab$latex)
@@ -58,7 +58,7 @@ summary(
 ## -----------------------------------------------------------------------------
 print(biases)
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  multi_bound(biases,
 #              RRUcY = 2, RRAUc = 1.5,
 #              RRSUsA1 = 1.25, RRUsYA1 = 2.5,

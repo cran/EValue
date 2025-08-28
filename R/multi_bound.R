@@ -62,7 +62,7 @@ multi_bound <- function(biases, RRAUc = NULL, RRUcY = NULL, RRUsYA1 = NULL,
     stop('Argument "biases" must be of class "bias" or "multi_bias"')
   }
  
-  if (class(biases) == "bias") biases <- multi_bias(biases)
+  if (inherits(biases, "bias")) biases <- multi_bias(biases)
   SU <- any(unlist(sapply(biases, attr, which = "SU")))
   
   
